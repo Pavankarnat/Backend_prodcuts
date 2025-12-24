@@ -1,0 +1,29 @@
+from typing import Annotated
+from fastapi import FastAPI, File, UploadFile, Form
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class FormData(BaseModel):
+    username: str
+    password: str
+
+@app.post("/files/")
+async def create_file(file: Annotated[list[bytes], File()]):
+    return {"file_size": [len(file) for file in file]} 
+
+@app.post("/filesname/")
+async def create_file_name(file: list[UploadFile]):
+    return {"file_name": [file.filename for file in file ]}
+
+@app.get("/")
+async def root():
+    return {"message": "Server is running. Use POST /login/ to login."}
+
+@app.post("/login/")
+async def login(username: str = Form(), password: str = Form()):
+    return {"username": username, "password": password}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("basic_annotated:app", host="0.0.0.0", port=8000, reload=True)
